@@ -1,11 +1,19 @@
-idf_component_register(SRCS "network_interfaces/uros_ethernet_netif.c" "network_interfaces/uros_wlan_netif.c"
-                       INCLUDE_DIRS "network_interfaces"
-                       REQUIRES nvs_flash esp_wifi esp_eth lwip)
+idf_component_register(
+    SRCS
+    "network_interfaces/uros_ethernet_netif.c"
+    "network_interfaces/uros_wlan_netif.c"
+    INCLUDE_DIRS "network_interfaces"
+    REQUIRES
+    nvs_flash
+    esp_wifi
+    esp_eth
+    lwip
+  )
 
 if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
-set(submake "$(MAKE)")
+    set(submake "$(MAKE)")
 else()
-set(submake "make")
+    set(submake "make")
 endif()
 
 if (${IDF_VERSION_MAJOR} EQUAL 5)
@@ -16,20 +24,20 @@ endif()
 
 set(APP_COLCON_META "${PROJECT_DIR}/app-colcon.meta")
 if(NOT EXISTS "${APP_COLCON_META}")
-set(APP_COLCON_META "")
+    set(APP_COLCON_META "")
 endif()
 
 set(EXTRA_ROS_PACKAGES "${PROJECT_DIR}/extra_ros_packages")
 if(NOT EXISTS "${EXTRA_ROS_PACKAGES}")
-set(EXTRA_ROS_PACKAGES "${COMPONENT_DIR}/extra_packages")
+    set(EXTRA_ROS_PACKAGES "${COMPONENT_DIR}/extra_packages")
 endif()
 
 if(${CONFIG_MICRO_ROS_ESP_EMBEDDEDRTPS_MIDDLEWARE})
-message(STATUS "Using embeddedRTPS middleware")
-set(MIDDLEWARE "embeddedrtps")
+    message(STATUS "Using embeddedRTPS middleware")
+    set(MIDDLEWARE "embeddedrtps")
 else()
-message(STATUS "Using Micro XRCE-DDS middleware")
-set(MIDDLEWARE "microxrcedds")
+    message(STATUS "Using Micro XRCE-DDS middleware")
+    set(MIDDLEWARE "microxrcedds")
 endif()
 
 # Create a list of packages to get includes
@@ -48,30 +56,30 @@ foreach(package ${PACKAGES})
     string(APPEND IDF_INCLUDES "${${package}_includes_string}")
 endforeach()
 
+# Execute custom makefile to build the microros library
 execute_process(
     WORKING_DIRECTORY ${COMPONENT_DIR}
     COMMAND
         ${submake} -j -f libmicroros.mk
-                X_CC=${CMAKE_C_COMPILER}
-                X_AR=${CMAKE_AR}
-                X_STRIP=${CMAKE_STRIP}
-                X_CFLAGS=${CMAKE_C_FLAGS}
-                X_CXX=${CMAKE_CXX_COMPILER}
-                X_CXXFLAGS=${CMAKE_CXX_FLAGS}
-                C_STANDARD=${CMAKE_C_STANDARD}
-                MIDDLEWARE=${MIDDLEWARE}
-                BUILD_DIR=${CMAKE_BINARY_DIR}
-                IDF_INCLUDES=${IDF_INCLUDES}
-                IDF_PATH=${IDF_PATH}
-                IDF_TARGET=${IDF_TARGET}
-                APP_COLCON_META=${APP_COLCON_META}
-                IDF_VERSION_MAJOR=${IDF_VERSION_MAJOR}
-                IDF_VERSION_MINOR=${IDF_VERSION_MINOR}
-                EXTRA_ROS_PACKAGES=${EXTRA_ROS_PACKAGES}
+            X_CC=${CMAKE_C_COMPILER}
+            X_AR=${CMAKE_AR}
+            X_STRIP=${CMAKE_STRIP}
+            X_CFLAGS=${CMAKE_C_FLAGS}
+            X_CXX=${CMAKE_CXX_COMPILER}
+            X_CXXFLAGS=${CMAKE_CXX_FLAGS}
+            C_STANDARD=${CMAKE_C_STANDARD}
+            MIDDLEWARE=${MIDDLEWARE}
+            BUILD_DIR=${CMAKE_BINARY_DIR}
+            IDF_INCLUDES=${IDF_INCLUDES}
+            IDF_PATH=${IDF_PATH}
+            IDF_TARGET=${IDF_TARGET}
+            APP_COLCON_META=${APP_COLCON_META}
+            IDF_VERSION_MAJOR=${IDF_VERSION_MAJOR}
+            IDF_VERSION_MINOR=${IDF_VERSION_MINOR}
+            EXTRA_ROS_PACKAGES=${EXTRA_ROS_PACKAGES}
 )
 
-add_prebuilt_library(libmicroros-prebuilt ""
-                     REQUIRES lwip)
+add_prebuilt_library(libmicroros-prebuilt "" REQUIRES lwip)
 
 add_dependencies(libmicroros-prebuilt libmicroros_project)
 
@@ -89,8 +97,12 @@ endforeach()
 add_dependencies(${COMPONENT_LIB} libmicroros-prebuilt)
 target_link_libraries(${COMPONENT_LIB} INTERFACE libmicroros-prebuilt)
 
-set_directory_properties( PROPERTIES ADDITIONAL_CLEAN_FILES
-    "${COMPONENT_DIR}/include;${COMPONENT_DIR}/micro_ros_dev;${COMPONENT_DIR}/micro_ros_src;${COMPONENT_DIR}/esp32_toolchain.cmake" )
+set_directory_properties(PROPERTIES ADDITIONAL_CLEAN_FILES
+    "${COMPONENT_DIR}/include;${COMPONENT_DIR}/micro_ros_dev;${COMPONENT_DIR}/micro_ros_src;${COMPONENT_DIR}/esp32_toolchain.cmake")
 
-add_custom_target(clean-microros COMMAND ${submake} -f libmicroros.mk clean
-                            WORKING_DIRECTORY ${COMPONENT_DIR})
+# Custom clean command - removes the library, includes, toolchain.cmake,
+# micro_ros_dev and micro_ros_src directories.
+add_custom_target(clean-microros
+    COMMAND ${submake} -f libmicroros.mk clean
+    WORKING_DIRECTORY ${COMPONENT_DIR}
+)
