@@ -15,6 +15,7 @@ CXXFLAGS_INTERNAL := $(X_CXXFLAGS) -ffunction-sections -fdata-sections
 
 all: $(EXTENSIONS_DIR)/libmicroros.a
 
+# Clean generated includes and library and any cloned repos
 clean:
 	rm -rf $(EXTENSIONS_DIR)/libmicroros.a; \
 	rm -rf $(EXTENSIONS_DIR)/include; \
@@ -22,6 +23,7 @@ clean:
 	rm -rf $(EXTENSIONS_DIR)/micro_ros_dev; \
 	rm -rf $(EXTENSIONS_DIR)/micro_ros_src;
 
+# Configure the toolchain.cmake from the template
 $(EXTENSIONS_DIR)/esp32_toolchain.cmake: $(EXTENSIONS_DIR)/esp32_toolchain.cmake.in
 	rm -f $(EXTENSIONS_DIR)/esp32_toolchain.cmake; \
 	cat $(EXTENSIONS_DIR)/esp32_toolchain.cmake.in | \
@@ -34,6 +36,7 @@ $(EXTENSIONS_DIR)/esp32_toolchain.cmake: $(EXTENSIONS_DIR)/esp32_toolchain.cmake
 		sed "s/@BUILD_CONFIG_DIR@/$(subst /,\/,$(BUILD_DIR)/config)/g" \
 		> $(EXTENSIONS_DIR)/esp32_toolchain.cmake
 
+# Build the ament tools required for the colcon build (taget host system)
 $(EXTENSIONS_DIR)/micro_ros_dev/install:
 	rm -rf micro_ros_dev; \
 	mkdir micro_ros_dev; cd micro_ros_dev; \
@@ -83,6 +86,7 @@ $(EXTENSIONS_DIR)/micro_ros_src/src:
 	test -f src/extra_packages/extra_packages.repos && cd src/extra_packages && vcs import --input extra_packages.repos || :;
 
 
+# Cross-compile the microros library
 $(EXTENSIONS_DIR)/micro_ros_src/install: $(EXTENSIONS_DIR)/esp32_toolchain.cmake $(EXTENSIONS_DIR)/micro_ros_dev/install $(EXTENSIONS_DIR)/micro_ros_src/src
 	cd $(UROS_DIR); \
 	unset AMENT_PREFIX_PATH; \
@@ -132,6 +136,7 @@ ifeq ($(IDF_TARGET),$(filter $(IDF_TARGET),esp32s2 esp32c3))
 		cd ..;
 endif
 
+# Create archive libmicroros.a
 $(EXTENSIONS_DIR)/libmicroros.a: $(EXTENSIONS_DIR)/micro_ros_src/install patch_atomic
 	mkdir -p $(UROS_DIR)/libmicroros; cd $(UROS_DIR)/libmicroros; \
 	for file in $$(find $(UROS_DIR)/install/lib/ -name '*.a'); do \
