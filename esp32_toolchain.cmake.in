@@ -1,5 +1,3 @@
-include(CMakeForceCompiler)
-
 set(CMAKE_SYSTEM_NAME Generic)
 
 set(idf_target "@IDF_TARGET@")
