@@ -37,6 +37,8 @@ $(EXTENSIONS_DIR)/esp32_toolchain.cmake: $(EXTENSIONS_DIR)/esp32_toolchain.cmake
 		> $(EXTENSIONS_DIR)/esp32_toolchain.cmake
 
 # Build the ament tools required for the colcon build (taget host system)
+# Remove flags -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=gcc to use defaults
+# for host system (i.e. clang on macOS)
 $(EXTENSIONS_DIR)/micro_ros_dev/install:
 	rm -rf micro_ros_dev; \
 	mkdir micro_ros_dev; cd micro_ros_dev; \
@@ -46,8 +48,9 @@ $(EXTENSIONS_DIR)/micro_ros_dev/install:
 	git clone -b humble https://github.com/ament/googletest src/googletest; \
 	git clone -b humble https://github.com/ros2/ament_cmake_ros src/ament_cmake_ros; \
 	git clone -b humble https://github.com/ament/ament_index src/ament_index; \
-	colcon build --cmake-args -DBUILD_TESTING=OFF -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=gcc;
+	colcon build --cmake-args -DBUILD_TESTING=OFF;
 
+# Clone micro-ROS packages for client library
 $(EXTENSIONS_DIR)/micro_ros_src/src:
 	rm -rf micro_ros_src; \
 	mkdir micro_ros_src; cd micro_ros_src; \
@@ -77,21 +80,18 @@ $(EXTENSIONS_DIR)/micro_ros_src/src:
 	git clone -b humble https://github.com/ros2/rcl_logging src/rcl_logging; \
 	git clone -b humble https://gitlab.com/ros-tracing/ros2_tracing src/ros2_tracing; \
 	git clone -b humble https://github.com/micro-ROS/micro_ros_utilities src/micro_ros_utilities; \
-    touch src/rosidl/rosidl_typesupport_introspection_cpp/COLCON_IGNORE; \
-    touch src/rcl_logging/rcl_logging_log4cxx/COLCON_IGNORE; \
-    touch src/rcl_logging/rcl_logging_spdlog/COLCON_IGNORE; \
-    touch src/rclc/rclc_examples/COLCON_IGNORE; \
+	touch src/rosidl/rosidl_typesupport_introspection_cpp/COLCON_IGNORE; \
+	touch src/rcl_logging/rcl_logging_log4cxx/COLCON_IGNORE; \
+	touch src/rcl_logging/rcl_logging_spdlog/COLCON_IGNORE; \
+	touch src/rclc/rclc_examples/COLCON_IGNORE; \
 	touch src/rcl/rcl_yaml_param_parser/COLCON_IGNORE; \
 	cp -rf $(EXTRA_ROS_PACKAGES) src/extra_packages || :; \
 	test -f src/extra_packages/extra_packages.repos && cd src/extra_packages && vcs import --input extra_packages.repos || :;
 
-
 # Cross-compile the microros library
 $(EXTENSIONS_DIR)/micro_ros_src/install: $(EXTENSIONS_DIR)/esp32_toolchain.cmake $(EXTENSIONS_DIR)/micro_ros_dev/install $(EXTENSIONS_DIR)/micro_ros_src/src
 	cd $(UROS_DIR); \
-	unset AMENT_PREFIX_PATH; \
-	PATH="$(subst /opt/ros/$(ROS_DISTRO)/bin,,$(PATH))"; \
-	. ../micro_ros_dev/install/local_setup.sh; \
+	. ../micro_ros_dev/install/setup.sh; \
 	colcon build \
 		--merge-install \
 		--packages-ignore-regex=.*_cpp \
@@ -105,12 +105,12 @@ $(EXTENSIONS_DIR)/micro_ros_src/install: $(EXTENSIONS_DIR)/esp32_toolchain.cmake
 		-DCMAKE_BUILD_TYPE=$(BUILD_TYPE) \
 		-DCMAKE_TOOLCHAIN_FILE=$(EXTENSIONS_DIR)/esp32_toolchain.cmake \
 		-DCMAKE_VERBOSE_MAKEFILE=OFF \
-        -DIDF_INCLUDES='${IDF_INCLUDES}' \
+		-DIDF_INCLUDES='${IDF_INCLUDES}' \
 		-DCMAKE_C_STANDARD=$(C_STANDARD) \
 		-DUCLIENT_C_STANDARD=$(C_STANDARD);
 
-patch_atomic:$(EXTENSIONS_DIR)/micro_ros_src/install
 # Workaround https://github.com/micro-ROS/micro_ros_espidf_component/issues/18
+patch_atomic:$(EXTENSIONS_DIR)/micro_ros_src/install
 ifeq ($(IDF_TARGET),$(filter $(IDF_TARGET),esp32s2 esp32c3))
 		echo $(UROS_DIR)/atomic_workaround; \
 		mkdir $(UROS_DIR)/atomic_workaround; cd $(UROS_DIR)/atomic_workaround; \
