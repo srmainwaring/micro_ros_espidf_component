@@ -80,6 +80,7 @@ $(EXTENSIONS_DIR)/micro_ros_src/src:
 	git clone -b humble https://github.com/ros2/rcl_logging src/rcl_logging; \
 	git clone -b humble https://gitlab.com/ros-tracing/ros2_tracing src/ros2_tracing; \
 	git clone -b humble https://github.com/micro-ROS/micro_ros_utilities src/micro_ros_utilities; \
+	git clone -b ros2 https://github.com/ros-geographic-info/geographic_info src/geographic_info; \
 	git clone -b humble https://github.com/ros2/geometry2 src/geometry2; \
 	git clone -b master https://github.com/ArduPilot/ardupilot.git src/ardupilot; \
 	touch src/rosidl/rosidl_typesupport_introspection_cpp/COLCON_IGNORE; \
@@ -87,6 +88,8 @@ $(EXTENSIONS_DIR)/micro_ros_src/src:
 	touch src/rcl_logging/rcl_logging_spdlog/COLCON_IGNORE; \
 	touch src/rclc/rclc_examples/COLCON_IGNORE; \
 	touch src/rcl/rcl_yaml_param_parser/COLCON_IGNORE; \
+	touch src/geographic_info/geodesy/COLCON_IGNORE; \
+	touch src/geographic_info/geographic_info/COLCON_IGNORE; \
 	touch src/geometry2/examples_tf2_py/COLCON_IGNORE; \
 	touch src/geometry2/geometry2/COLCON_IGNORE; \
 	touch src/geometry2/test_tf2/COLCON_IGNORE; \
