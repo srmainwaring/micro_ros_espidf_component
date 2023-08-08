@@ -81,6 +81,7 @@ $(EXTENSIONS_DIR)/micro_ros_src/src:
 	git clone -b humble https://gitlab.com/ros-tracing/ros2_tracing src/ros2_tracing; \
 	git clone -b humble https://github.com/micro-ROS/micro_ros_utilities src/micro_ros_utilities; \
 	git clone -b humble https://github.com/ros2/geometry2 src/geometry2; \
+	git clone -b master https://github.com/ArduPilot/ardupilot.git src/ardupilot; \
 	touch src/rosidl/rosidl_typesupport_introspection_cpp/COLCON_IGNORE; \
 	touch src/rcl_logging/rcl_logging_log4cxx/COLCON_IGNORE; \
 	touch src/rcl_logging/rcl_logging_spdlog/COLCON_IGNORE; \
@@ -100,6 +101,10 @@ $(EXTENSIONS_DIR)/micro_ros_src/src:
 	touch src/geometry2/tf2_ros_py/COLCON_IGNORE; \
 	touch src/geometry2/tf2_sensor_msgs/COLCON_IGNORE; \
 	touch src/geometry2/tf2_tools/COLCON_IGNORE; \
+	touch src/ardupilot/libraries/COLCON_IGNORE; \
+	touch src/ardupilot/modules/COLCON_IGNORE; \
+	touch src/ardupilot/Tools/ros2/ardupilot_dds_tests/COLCON_IGNORE; \
+	touch src/ardupilot/Tools/ros2/ardupilot_sitl/COLCON_IGNORE; \
 	cp -rf $(EXTRA_ROS_PACKAGES) src/extra_packages || :; \
 	test -f src/extra_packages/extra_packages.repos && cd src/extra_packages && vcs import --input extra_packages.repos || :;
 
