@@ -48,7 +48,7 @@ $(EXTENSIONS_DIR)/micro_ros_dev/install:
 	git clone -b humble https://github.com/ament/googletest src/googletest; \
 	git clone -b humble https://github.com/ros2/ament_cmake_ros src/ament_cmake_ros; \
 	git clone -b humble https://github.com/ament/ament_index src/ament_index; \
-	colcon build --cmake-args -DBUILD_TESTING=OFF;
+	colcon build --cmake-args -DBUILD_TESTING=OFF -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++;
 
 # Clone micro-ROS packages for client library
 $(EXTENSIONS_DIR)/micro_ros_src/src:
